@@ -8,7 +8,7 @@ const calculateSPY = require('./main/functions/performance/spy');
 const startDate = '2016-10-22';
 
 personalPerformance.getPerformance(startDate).then((records) => {
-    calculateSPY.getPerformance(records[records.length - 1].VALUE, startDate).then((spyRecords) => {
+    calculateSPY.getPerformance(startDate).then((spyRecords) => {
         generateCSV(spyRecords, 'spy');
     });
     generateCSV(records, 'personal');

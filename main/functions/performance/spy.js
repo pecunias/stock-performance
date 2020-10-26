@@ -1,4 +1,4 @@
-const getPerformance = async (initialValue, startDate) => {
+const getPerformance = async (startDate) => {
     const yahooFinance = require('yahoo-finance');
     const today = require('../date/today').getDate();
 
