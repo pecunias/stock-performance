@@ -35,6 +35,10 @@ const getPortfolio = () => [
             symbol: 'WCEXF',
             amount: 8000
         },
+        {
+            symbol: 'CRLBF',
+            amount: 120
+        },
     ];
 
 exports.getPortfolio = getPortfolio;
