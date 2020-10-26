@@ -63,6 +63,7 @@
                             .attr("fill", "none")
                             .attr("stroke", lineColor)
                             .attr("stroke-width", 1.5)
+                            .attr("class", "line-graph")
                             .attr("d", d3.line()
                             .x(function(d) { return x(d.date) })
                             .y(function(d) { return y(d.value) })
@@ -188,5 +189,18 @@
         .axis line, .axis path, .axis text{
             stroke: white;
         }
+
+        .line-graph {       
+            stroke-dasharray: 10000;
+            stroke-dashoffset: -4500;
+            animation: dash 8s ease-in-out forwards;
+        }
+
+        @keyframes dash {
+            to {                    
+                stroke-dashoffset: 4500;
+            }
+        }
+ 
     </style>
 </html>
