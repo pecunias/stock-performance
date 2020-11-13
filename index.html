@@ -48,14 +48,14 @@
                 const profitPercentage = calculatePercentage(startEndValues[0].value, startEndValues[1].value);
 
                 const trendTextColor = type ==='personal' ? '#00a383ff' : '#7A0000';
-                let trendTextWidth;
+                let trendTextX;
                 let trendTextY = 100;
 
                 if (window.innerWidth < 876) {
-                    trendTextWidth = 0;
+                    trendTextX = 0;
                     trendTextY = type === 'personal' ? 100 : 300;
                 } else {
-                    trendTextWidth = type === 'personal' ? (0 + (widthGraph / 25)) : (widthGraph - heightGraph);
+                    trendTextX = type === 'personal' ? (0 + (widthGraph / 25)) : (widthGraph - (widthGraph / 4));
                     trendTextY = 100;
                 }
                 
@@ -73,15 +73,15 @@
                         );
 
                 svgElement.append("text")
-                        .attr("x", trendTextWidth)             
+                        .attr("x", trendTextX)             
                         .attr("y", trendTextY) 
-                        .style("font-size", `${heightGraph / 2}px`) 
+                        .style("font-size", `${heightGraph / 4}px`) 
                         .style("font-family", "sans-serif")
                         .style("stroke", trendTextColor) 
                         .style("stroke-width", "2px")
                         .style("fill", "none")  
                         .style("opacity", 0.75)  
-                        .text(`${profitPercentage}%`)
+                        .text(`${profitPercentage >= 0 ? '+' : ''}${profitPercentage}%`)
             }
 
             function calculatePercentage(startValue, endValue) {
