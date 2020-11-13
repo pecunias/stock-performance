@@ -1,0 +1,29 @@
+{
+  "name": "stock-performance",
+  "version": "1.0.0",
+  "description": "Compare to the S&P500 how well your portfolio does",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pecunias/stock-performance.git"
+  },
+  "keywords": [
+    "spy",
+    "portfolio",
+    "compare"
+  ],
+  "author": "Jelte Wiersma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pecunias/stock-performance/issues"
+  },
+  "homepage": "https://github.com/pecunias/stock-performance#readme",
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "express": "^4.17.1",
+    "yahoo-finance": "^0.3.6"
+  }
+}
