@@ -1,10 +1,10 @@
-const personalPerformance = require('./main/functions/performance/personal');
+const personalPerformance = require('./server/functions/performance/personal');
 const express = require('express')
 const app = express()
 const port = 3000;
 const path = require('path');
-const { generateCSV } = require('./main/functions/csv/generate');
-const calculateSPY = require('./main/functions/performance/spy');
+const { generateCSV } = require('./server/functions/csv/generate');
+const calculateSPY = require('./server/functions/performance/spy');
 const startDate = '2016-10-22';
 
 personalPerformance.getPerformance(startDate).then((records) => {
@@ -15,15 +15,15 @@ personalPerformance.getPerformance(startDate).then((records) => {
 });
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname + '/index.html'));
+    res.sendFile(path.join(__dirname + '/client/index.html'));
 });
 
-app.get('/data/personal.csv', function(req, res) {
-    res.sendFile(path.join(__dirname + '/data/personal.csv'));
+app.get('/data/:csvFile', function(req, res) {
+    res.sendFile(path.join(__dirname + `/client/data/${req.params.csvFile}`));
 });
 
-app.get('/data/spy.csv', function(req, res) {
-    res.sendFile(path.join(__dirname + '/data/spy.csv'));
+app.get('/script.js', function(req, res) {
+    res.sendFile(path.join(__dirname + '/client/script.js'));
 });
 
 app.listen(port, () => {

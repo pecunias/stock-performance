@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+    <meta charset="utf-8">
+
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <!-- Create a div where the graph will take place -->
+    <div id="four-years"></div>
+    <div id="one-year"></div>
+    <div id="half-year"></div>
+    <div id="month"></div>
+    <div id="week"></div>
+    <script src="./script.js"></script>
+
+    <style>
+        /* paolo-veronese-green: #00a383ff;
+        --red: #7A0000;
+        --eerie-black: #252525ff;
+        --safety-orange: #ff7300ff;
+        --battleship-grey: #858585ff;
+        --rich-black-fogra-39: #0a0a0aff;
+        --white: #ffffffff;
+        */
+        body {
+            background: #0a0a0aff;
+        }
+
+        .axis line, .axis path, .axis text{
+            stroke: white;
+        }
+
+        .line-graph {       
+            stroke-dasharray: 10000;
+            stroke-dashoffset: -4500;
+            animation: dash 8s ease-in-out forwards;
+        }
+
+        .neon {
+            stroke-linejoin: round;
+            stroke-miterlimit: 1;
+            stroke-linecap: round;
+            stroke-dasharray: 10000;
+            stroke-dashoffset: -4500;
+            animation: dash 8s ease-in-out forwards, glow 3s infinite alternate;
+        }
+
+        @keyframes dash {
+            to {                    
+                stroke-dashoffset: 4500;
+            }
+        }
+
+        @keyframes glow {
+            from {
+                opacity: 0.2;
+            }
+            to {
+                opacity: 0.5;
+            }
+        }
+ 
+    </style>
+</html>

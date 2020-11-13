@@ -1,7 +1,7 @@
 const generateCSV = (records, fileName) => {
     const createCsvWriter = require('csv-writer').createObjectCsvWriter;
     const csvWriter = createCsvWriter({
-        path: `data/${fileName}.csv`,
+        path: `client/data/${fileName}.csv`,
         header: [
             {id: 'DATE', title: 'date'},
             {id: 'VALUE', title: 'value'}
