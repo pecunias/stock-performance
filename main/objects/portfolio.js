@@ -13,7 +13,7 @@ const getPortfolio = () => [
         },
         {
             symbol: 'IIPR',
-            amount: 53
+            amount: 40
         },
         {
             symbol: 'MSFT',
@@ -24,20 +24,20 @@ const getPortfolio = () => [
             amount: 125
         },
         {
-            symbol: 'ITHUF',
-            amount: 922
-        },
-        {
-            symbol: 'MPXOF',
-            amount: 551
-        },
-        {
             symbol: 'WCEXF',
             amount: 8000
         },
         {
             symbol: 'CRLBF',
             amount: 120
+        },
+        {
+            symbol: 'EWY',
+            amount: 30
+        },
+        {
+            symbol: 'EWJ',
+            amount: 2
         },
     ];
 

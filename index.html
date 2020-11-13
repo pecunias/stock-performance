@@ -43,10 +43,26 @@
                         .range([ height, 0 ]);
             }
 
-            function addTrendline(svgElement, data, x, y) {
-                 // Add the trendline
-                 svgElement.append("path")
-                        .datum(data.filter((element, index, array) => index === 0 || index === array.length - 1))
+            function addTrendline(svgElement, data, x, y, type, heightGraph, widthGraph) {
+                const startEndValues = data.filter((element, index, array) => index === 0 || index === array.length - 1); 
+                const profitPercentage = calculatePercentage(startEndValues[0].value, startEndValues[1].value);
+
+                const trendTextColor = type ==='personal' ? '#00a383ff' : '#7A0000';
+                let trendTextWidth;
+                let trendTextY = 100;
+
+                if (window.innerWidth < 876) {
+                    trendTextWidth = 0;
+                    trendTextY = type === 'personal' ? 100 : 300;
+                } else {
+                    trendTextWidth = type === 'personal' ? (0 + (widthGraph / 25)) : (widthGraph - heightGraph);
+                    trendTextY = 100;
+                }
+                
+                // Add the trendline
+                 svgElement
+                        .append("path")
+                        .datum(startEndValues)
                         .attr("fill", "none")
                         .attr("stroke", "#858585ff")
                         .attr("stroke-dasharray", "12")
@@ -55,19 +71,48 @@
                         .x(function(d) { return x(d.date) })
                         .y(function(d) { return y(d.value) })
                         );
+
+                svgElement.append("text")
+                        .attr("x", trendTextWidth)             
+                        .attr("y", trendTextY) 
+                        .style("font-size", `${heightGraph / 2}px`) 
+                        .style("font-family", "sans-serif")
+                        .style("stroke", trendTextColor) 
+                        .style("stroke-width", "2px")
+                        .style("fill", "none")  
+                        .style("opacity", 0.75)  
+                        .text(`${profitPercentage}%`)
+            }
+
+            function calculatePercentage(startValue, endValue) {
+                return Math.floor(((startValue / endValue) * 100) - 100);
             }
 
             function addPerformanceLine(svgElement, data, x, y, lineColor) {
                 svgElement.append("path")
-                            .datum(data)
-                            .attr("fill", "none")
-                            .attr("stroke", lineColor)
-                            .attr("stroke-width", 1.5)
-                            .attr("class", "line-graph")
-                            .attr("d", d3.line()
+                        .datum(data)
+                        .attr("fill", "none")
+                        .attr("stroke", lineColor)
+                        .attr("stroke-width", 1)
+                        .attr("class", "line-graph")
+                        .attr("d", 
+                            d3.line()
+                                .x(function(d) { return x(d.date) })
+                                .y(function(d) { return y(d.value) })
+                            );
+
+                svgElement.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", lineColor)
+                    .attr("stroke-width", 8)
+                    .attr("class", "neon")
+                    .style("opacity", 0.2)
+                    .attr("d", 
+                        d3.line()
                             .x(function(d) { return x(d.date) })
                             .y(function(d) { return y(d.value) })
-                            );
+                    );
             }
 
             
@@ -121,7 +166,7 @@
 
                     svg.append("text")
                         .attr("x", (width / 2))             
-                        .attr("y", 0 - (margin.top / 2))
+                        .attr("y", 0)
                         .attr("text-anchor", "middle")  
                         .style("font-size", "16px") 
                         .style("fill", "white")  
@@ -135,7 +180,7 @@
                     addPerformanceLine(svg, dataPersonal, x, y, "#00a383ff");
                     
                     // Add the trendline
-                    addTrendline(svg, dataPersonal, x, y);
+                    addTrendline(svg, dataPersonal, x, y, 'personal', height, width);
 
                     d3.csv("./data/spy.csv",
 
@@ -157,20 +202,32 @@
     
                             // Add the line                        
                             addPerformanceLine(svg, dataSPY, x, y, "#7A0000");
-
                             // Add the trendline
-                            addTrendline(svg, dataSPY, x, y);
+                            addTrendline(svg, dataSPY, x, y, 'spy', height, width);
                         }
                     );  
                 });
             }
 
-            draw('four-years');
-            draw('one-year');
-            draw('half-year');
-            draw('month');
-            draw('week');
+            function start() {
+                draw('four-years');
+                draw('one-year');
+                draw('half-year');
+                draw('month');
+                draw('week');
+            }
 
+            function reset() {
+                const elements = ["four-years", "one-year", "half-year", "month", "week"];
+                elements.forEach((elementName) => {
+                    const element = document.getElementById(elementName);
+                    element.removeChild(element.childNodes[0]);
+                })
+                start();
+            }
+
+            start();
+            window.onresize = reset;
     </script>
 
     <style>
@@ -196,9 +253,27 @@
             animation: dash 8s ease-in-out forwards;
         }
 
+        .neon {
+            stroke-linejoin: round;
+            stroke-miterlimit: 1;
+            stroke-linecap: round;
+            stroke-dasharray: 10000;
+            stroke-dashoffset: -4500;
+            animation: dash 8s ease-in-out forwards, glow 3s infinite alternate;
+        }
+
         @keyframes dash {
             to {                    
                 stroke-dashoffset: 4500;
+            }
+        }
+
+        @keyframes glow {
+            from {
+                opacity: 0.2;
+            }
+            to {
+                opacity: 0.5;
             }
         }
  
