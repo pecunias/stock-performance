@@ -1,4 +1,5 @@
 const personalPerformance = require('./server/functions/performance/personal');
+const individualPerformance = require('./server/functions/performance/individual');
 const express = require('express')
 const app = express()
 const port = 3000;
@@ -8,10 +9,13 @@ const calculateSPY = require('./server/functions/performance/spy');
 const startDate = '2016-10-22';
 
 personalPerformance.getPerformance(startDate).then((records) => {
+    generateCSV(records, 'personal');
+    individualPerformance.getPerformance(startDate).then((records) => {
+        generateCSV(records, 'individual');   
+    });
     calculateSPY.getPerformance(startDate).then((spyRecords) => {
         generateCSV(spyRecords, 'spy');
     });
-    generateCSV(records, 'personal');
 });
 
 app.get('/', function(req, res) {

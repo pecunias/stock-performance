@@ -14,7 +14,7 @@ const getPerformance = async (startDate) => {
         results = combineEntries(result, portfolio);
       }
     );
-    return results;
+    return results.reverse();
 };
 
 

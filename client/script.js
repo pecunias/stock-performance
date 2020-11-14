@@ -1,3 +1,5 @@
+let WINDOW_INNER_WIDTH;
+
 function selectAndAppendElement(elementId, margin, width, height) {
     return d3.select(`#${elementId}`)
         .append("svg")
@@ -26,7 +28,8 @@ function setYAxis(data, height, elementId) {
         modifierLow = 0.99;
     }
     return d3.scaleLinear()
-            .domain([d3.min(data, function(d) { return (+d.value*modifierLow)}), d3.max(data, function(d) { return (+d.value*modifierHigh); })])
+            // .domain([d3.min(data, function(d) { return (+d.value*modifierLow)}), d3.max(data, function(d) { return (+d.value*modifierHigh); })])
+            .domain([d3.min(data, function(d) { return 0}), d3.max(data, function(d) { return (+d.value*modifierHigh); })])
             .range([ height, 0 ]);
 }
 
@@ -34,24 +37,16 @@ function addTrendline(svgElement, data, x, y, type, heightGraph, widthGraph) {
     const startEndValues = data.filter((element, index, array) => index === 0 || index === array.length - 1); 
     const profitPercentage = calculatePercentage(startEndValues[0].value, startEndValues[1].value);
 
-    const trendTextColor = type ==='personal' ? '#00a383ff' : '#7A0000';
-    let trendTextX;
-    let trendTextY = 100;
-
-    if (window.innerWidth < 876) {
-        trendTextX = 0;
-        trendTextY = type === 'personal' ? 100 : 300;
-    } else {
-        trendTextX = type === 'personal' ? (0 + (widthGraph / 25)) : (widthGraph - (widthGraph / 4));
-        trendTextY = 100;
-    }
+    const trendTextColor = type ==='personal' ? '#00A383FF' : '#7A0000';
+    let trendTextX = type === 'personal' ? 0 : widthGraph - 300;
+    let trendTextY = 50;
     
     // Add the trendline
      svgElement
             .append("path")
             .datum(startEndValues)
             .attr("fill", "none")
-            .attr("stroke", "#858585ff")
+            .attr("stroke", "#858585FF")
             .attr("stroke-dasharray", "12")
             .attr("stroke-width", 1)
             .attr("d", d3.line()
@@ -62,7 +57,7 @@ function addTrendline(svgElement, data, x, y, type, heightGraph, widthGraph) {
     svgElement.append("text")
             .attr("x", trendTextX)             
             .attr("y", trendTextY) 
-            .style("font-size", `${heightGraph / 4}px`) 
+            .style("font-size", `${heightGraph / 8}px`) 
             .style("font-family", "sans-serif")
             .style("stroke", trendTextColor) 
             .style("stroke-width", "2px")
@@ -72,50 +67,71 @@ function addTrendline(svgElement, data, x, y, type, heightGraph, widthGraph) {
 }
 
 function calculatePercentage(startValue, endValue) {
-    return Math.floor(((startValue / endValue) * 100) - 100);
+    return Math.floor(((endValue / startValue) * 100) - 100);
 }
 
-function addPerformanceLine(svgElement, data, x, y, lineColor) {
-    svgElement.append("path")
+function addPerformanceLine(svgElement, data, x, y, lineColor, type) {
+    const path = svgElement.append("path")
             .datum(data)
-            .attr("fill", "none")
-            .attr("stroke", lineColor)
-            .attr("stroke-width", 1)
-            .attr("class", "line-graph")
             .attr("d", 
                 d3.line()
                     .x(function(d) { return x(d.date) })
                     .y(function(d) { return y(d.value) })
                 );
-
-    svgElement.append("path")
-        .datum(data)
-        .attr("fill", "none")
+    const pathTotalLength = path.node().getTotalLength();
+    path.attr("fill", "none")
         .attr("stroke", lineColor)
-        .attr("stroke-width", 8)
-        .attr("class", "neon")
-        .style("opacity", 0.2)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", `${pathTotalLength} ${pathTotalLength}`)
+        .attr("stroke-dashoffset", pathTotalLength)
+    .transition()
+        .duration(4000)
+        .ease(d3.easeLinear)
+        .attr("stroke-dashoffset", 0);
+
+        
+
+
+    
+    
+    if (type !== 'individual') {
+        const glowPath = svgElement.append("path")
+        .datum(data)
         .attr("d", 
             d3.line()
                 .x(function(d) { return x(d.date) })
                 .y(function(d) { return y(d.value) })
         );
+
+    glowPath.attr("fill", "none")
+        .attr("stroke", lineColor)
+        .attr("stroke-width", 8)
+        .attr("class", "neon")
+        .attr("stroke-dasharray", `${pathTotalLength} ${pathTotalLength}`)
+        .attr("stroke-dashoffset", pathTotalLength)
+        .style("opacity", 0.2)
+    .transition()
+        .duration(12000)
+        .ease(d3.easeLinear)
+        .attr("stroke-dashoffset", 0);
+    }
+    
 }
 
 
 function filterOnLastDays(data, type) {
     switch(type) {
         case 'one-year':
-            return data.slice(0, 365);
+            return data.slice(Math.max(data.length - 365, 1));
             break;
         case 'half-year':
-            return data.slice(0, 183);
+            return data.slice(Math.max(data.length - 183, 1));
             break;
         case 'month':
-            return data.slice(0, 30);
+            return data.slice(Math.max(data.length - 30, 1));
             break;
         case 'week':
-            return data.slice(0, 7);
+            return data.slice(Math.max(data.length - 7, 1));
             break;
         default:
             return data;
@@ -126,7 +142,7 @@ function draw(elementId) {
     // set the dimensions and margins of the graph
     var margin = {top: 50, right: 30, bottom: 30, left: 60},
         width = window.innerWidth - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+        height = 920 - margin.top - margin.bottom;
     // append the svg object to the body of the page
     var svg = selectAndAppendElement(elementId, margin, width, height);
 
@@ -142,7 +158,7 @@ function draw(elementId) {
         function(dataPersonal) {
             let initialValuePersonal;
             dataPersonal = filterOnLastDays(dataPersonal, elementId)
-            initialValuePersonal = dataPersonal[dataPersonal.length - 1].value;
+            initialValuePersonal = dataPersonal[0].value;
         // Add X axis --> it is a date format
         var x = setXAxis(dataPersonal, width);
 
@@ -153,11 +169,12 @@ function draw(elementId) {
 
         svg.append("text")
             .attr("x", (width / 2))             
-            .attr("y", 0)
+            .attr("y", height)
             .attr("text-anchor", "middle")  
-            .style("font-size", "16px") 
+            .style("font-family", "Georgia, Times, 'Times New Roman', serif")
+            .style("font-size", (window.innerWidth / 10) <= 96 ? (window.innerWidth / 10) : 96) 
             .style("fill", "white")  
-            .text((elementId.charAt(0).toUpperCase() + elementId.slice(1)).replace('-', ' ') + ' performance');
+            .text((elementId.charAt(0).toUpperCase() + elementId.slice(1)).replace('-', ' '));
         // Add Y axis
         var y = setYAxis(dataPersonal, height, elementId);
         svg.append("g")
@@ -168,6 +185,23 @@ function draw(elementId) {
         
         // Add the trendline
         addTrendline(svg, dataPersonal, x, y, 'personal', height, width);
+
+        d3.csv("./data/individual.csv", 
+            // When reading the csv, I must format variables:
+            function(d){
+                return { date : d3.timeParse("%Y-%m-%d")(d.date), value : d.value, symbol: d.symbol }
+            },
+
+            function(dataIndividual) {
+                const uniqueSymbols = [... new Set(dataIndividual.map(({symbol}) => symbol))];
+
+                uniqueSymbols.map((symbolName) => {
+                    // Add the line
+                    addPerformanceLine(svg, filterOnLastDays(dataIndividual.filter(({symbol}) => symbol === symbolName), elementId), x, y, "#"+((1<<24)*Math.random()|0).toString(16), 'individual');
+                })
+                
+            }
+        );
 
         d3.csv("./data/spy.csv",
 
@@ -180,7 +214,7 @@ function draw(elementId) {
                 let initialValueSPY;
                 let amountSharesSPY;
                 dataSPY = filterOnLastDays(dataSPY, elementId)
-                initialValueSPY = dataSPY[dataSPY.length -1].value;
+                initialValueSPY = dataSPY[0].value;
                 amountSharesSPY = Math.floor(initialValuePersonal / initialValueSPY);
                 dataSPY = dataSPY.map(function(dataSPY) {
                     dataSPY.value *= amountSharesSPY;
@@ -197,20 +231,28 @@ function draw(elementId) {
 }
 
 function start() {
-    draw('four-years');
-    draw('one-year');
-    draw('half-year');
-    draw('month');
-    draw('week');
+        draw('four-years');
+        draw('one-year');
+        draw('half-year');
+        draw('month');
+        draw('week');
+        WINDOW_INNER_WIDTH = window.innerWidth;
 }
 
 function reset() {
-    const elements = ["four-years", "one-year", "half-year", "month", "week"];
-    elements.forEach((elementName) => {
-        const element = document.getElementById(elementName);
-        element.removeChild(element.childNodes[0]);
-    })
-    start();
+    if (WINDOW_INNER_WIDTH === window.innerWidth) {
+        return;
+    } else {
+        WINDOW_INNER_WIDTH = window.innerWidth;
+        const elements = ["four-years", "one-year", "half-year", "month", "week"];
+        elements.forEach((elementName) => {
+            const element = document.getElementById(elementName);
+            if (element) {
+                element.removeChild(element.childNodes[0]);
+            }
+        });
+        start();
+    }
 }
 
 start();

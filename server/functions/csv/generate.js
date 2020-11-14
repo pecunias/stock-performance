@@ -4,7 +4,8 @@ const generateCSV = (records, fileName) => {
         path: `client/data/${fileName}.csv`,
         header: [
             {id: 'DATE', title: 'date'},
-            {id: 'VALUE', title: 'value'}
+            {id: 'VALUE', title: 'value'},
+            {id: 'SYMBOL', title: 'symbol'}
         ]
     });
      

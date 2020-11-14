@@ -1,19 +1,17 @@
 const getPerformance = async (startDate) => {
     const yahooFinance = require('yahoo-finance');
+    const { seperateEntries } = require('../modify-data/seperate-entries');
     const today = require('../date/today').getDate();
+    const portfolio = require('../../objects/portfolio');
 
-    const results = [];
+    let results = [];
 
     await yahooFinance.historical({
-        symbol: 'SPY',
+        symbols: portfolio.getPortfolio().map(item => item.symbol),
         from: startDate,
         to: today,
       }, function (err, result) {
-        result.forEach((element) => {
-            const date = `${element.date.getFullYear()}-${(element.date.getMonth() + 1)}-${element.date.getDate()}`;
-            const entry = {DATE: date, VALUE: element.close};
-            results.push(entry);
-        });
+        results = seperateEntries(result, portfolio);
       }
     );
     return results.reverse();

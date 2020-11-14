@@ -22,32 +22,18 @@
         --white: #ffffffff;
         */
         body {
-            background: #0a0a0aff;
+            background: #0A0A0AFF;
         }
 
         .axis line, .axis path, .axis text{
             stroke: white;
         }
 
-        .line-graph {       
-            stroke-dasharray: 10000;
-            stroke-dashoffset: -4500;
-            animation: dash 8s ease-in-out forwards;
-        }
-
         .neon {
             stroke-linejoin: round;
             stroke-miterlimit: 1;
             stroke-linecap: round;
-            stroke-dasharray: 10000;
-            stroke-dashoffset: -4500;
-            animation: dash 8s ease-in-out forwards, glow 3s infinite alternate;
-        }
-
-        @keyframes dash {
-            to {                    
-                stroke-dashoffset: 4500;
-            }
+            animation: glow 3s infinite alternate;
         }
 
         @keyframes glow {
