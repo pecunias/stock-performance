@@ -11,7 +11,7 @@ const getPerformance = async (startDate) => {
       }, function (err, result) {
         result.forEach((element) => {
             const date = `${element.date.getFullYear()}-${(element.date.getMonth() + 1)}-${element.date.getDate()}`;
-            const entry = {DATE: date, VALUE: element.close};
+            const entry = {DATE: date, VALUE: element.close, SYMBOL: 'SPY'};
             results.push(entry);
         });
       }

@@ -11,7 +11,7 @@ const getPerformance = async (startDate) => {
         from: startDate,
         to: today,
       }, function (err, result) {
-        results = combineEntries(result, portfolio);
+        results = combineEntries(result, portfolio, 'PERS');
       }
     );
     return results.reverse();
