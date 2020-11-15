@@ -10,6 +10,6 @@ const seperateEntries = (result, portfolio) => {
             results.push(entry);
         })
       }
-    return results.reverse();
+    return results;
 }
 exports.seperateEntries = seperateEntries;

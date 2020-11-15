@@ -1,4 +1,5 @@
 let WINDOW_INNER_WIDTH;
+let IS_TOOLBAR_ACTIVE = false;
 
 function selectAndAppendElement(elementId, margin, width, height) {
     return d3.select(`#${elementId}`)
@@ -43,27 +44,16 @@ function addTrendline(svgElement, data, x, y, type, heightGraph, widthGraph) {
     
     // Add the trendline
      svgElement
-            .append("path")
-            .datum(startEndValues)
-            .attr("fill", "none")
-            .attr("stroke", "#858585FF")
-            .attr("stroke-dasharray", "12")
-            .attr("stroke-width", 1)
-            .attr("d", d3.line()
-            .x(function(d) { return x(d.date) })
-            .y(function(d) { return y(d.value) })
-            );
-
-    svgElement.append("text")
-            .attr("x", trendTextX)             
-            .attr("y", trendTextY) 
-            .style("font-size", `${heightGraph / 8}px`) 
-            .style("font-family", "sans-serif")
-            .style("stroke", trendTextColor) 
-            .style("stroke-width", "2px")
-            .style("fill", "none")  
-            .style("opacity", 0.75)  
-            .text(`${profitPercentage >= 0 ? '+' : ''}${profitPercentage}%`)
+        .append("path")
+        .datum(startEndValues)
+        .attr("fill", "none")
+        .attr("stroke", "#858585FF")
+        .attr("stroke-dasharray", "12")
+        .attr("stroke-width", 1)
+        .attr("d", d3.line()
+        .x(function(d) { return x(d.date) })
+        .y(function(d) { return y(d.value) })
+        );
 }
 
 function calculatePercentage(startValue, endValue) {
@@ -79,21 +69,74 @@ function addPerformanceLine(svgElement, data, x, y, lineColor, type) {
                     .y(function(d) { return y(d.value) })
                 );
     const pathTotalLength = path.node().getTotalLength();
+
+
+    let stockText = svgElement.append("text")
+        .attr("x", window.innerWidth / 2)             
+        .attr("y", "50%")
+        .attr("text-anchor", "middle")
+        .style("pointer-events", "none")  
+        .style("font-family", "sans-serif")
+        .style("opacity", 0.5)
+        .style("font-size", window.innerWidth / 4) 
+        .style("fill", "white");
+
+    let profitText = svgElement.append("text")
+        .attr("x", window.innerWidth / 3)             
+        .attr("y", "80%") 
+        .style("font-size", window.innerWidth / 8) 
+        .style("font-family", "sans-serif")
+        .style("pointer-events", "none")
+        .style("stroke", lineColor) 
+        .style("stroke-width", "2px")
+        .style("fill", lineColor)  
+        .style("opacity", 0.75);
+
+    function showTicker() {
+        stockText.text(data[0].symbol);
+        profitText.text(`${calculatePercentage(data[0].value, data[data.length - 1].value)  >= 0 ? '+' : ''}${calculatePercentage(data[0].value, data[data.length - 1].value)}%`);
+        path.attr("stroke-width", 6);
+        stockText.style("display", "block");
+        profitText.style("display", "block");
+        IS_TOOLBAR_ACTIVE = true;
+    }
+
     path.attr("fill", "none")
         .attr("stroke", lineColor)
-        .attr("stroke-width", 1)
+        .attr("stroke-width", 4)
         .attr("stroke-dasharray", `${pathTotalLength} ${pathTotalLength}`)
         .attr("stroke-dashoffset", pathTotalLength)
+        .on('mouseover', () => {
+            if (!IS_TOOLBAR_ACTIVE) {
+                showTicker();
+            }
+        })
+        .on('mouseout', () => {
+            if (IS_TOOLBAR_ACTIVE) {
+                IS_TOOLBAR_ACTIVE = false;
+                    path.attr("stroke-width", 4); 
+                    stockText.style("display", "none");
+                    profitText.style("display", "none");
+            }
+        })
+        .on('touchstart', () => {
+            if (!IS_TOOLBAR_ACTIVE) {
+                showTicker();
+            }
+        })
+        .on('touchend', () => {
+            if (IS_TOOLBAR_ACTIVE) {
+                IS_TOOLBAR_ACTIVE = false;
+                    path.attr("stroke-width", 4); 
+                    stockText.style("display", "none");
+                    profitText.style("display", "none");
+            }
+        })
     .transition()
         .duration(4000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-        
-
-
-    
-    
     if (type !== 'individual') {
         const glowPath = svgElement.append("path")
         .datum(data)
@@ -103,19 +146,18 @@ function addPerformanceLine(svgElement, data, x, y, lineColor, type) {
                 .y(function(d) { return y(d.value) })
         );
 
-    glowPath.attr("fill", "none")
-        .attr("stroke", lineColor)
-        .attr("stroke-width", 8)
-        .attr("class", "neon")
-        .attr("stroke-dasharray", `${pathTotalLength} ${pathTotalLength}`)
-        .attr("stroke-dashoffset", pathTotalLength)
-        .style("opacity", 0.2)
-    .transition()
-        .duration(12000)
-        .ease(d3.easeLinear)
-        .attr("stroke-dashoffset", 0);
-    }
-    
+        glowPath.attr("fill", "none")
+            .attr("stroke", lineColor)
+            .attr("stroke-width", 12)
+            .attr("class", "neon")
+            .attr("stroke-dasharray", `${pathTotalLength} ${pathTotalLength}`)
+            .attr("stroke-dashoffset", pathTotalLength)
+            .style("opacity", 0.2)
+        .transition()
+            .duration(12000)
+            .ease(d3.easeLinear)
+            .attr("stroke-dashoffset", 0);
+    }   
 }
 
 
@@ -124,13 +166,25 @@ function filterOnLastDays(data, type) {
         case 'one-year':
             return data.slice(Math.max(data.length - 365, 1));
             break;
+        case 'one-year-individual':
+            return data.slice(Math.max(data.length - 365, 1));
+            break;
         case 'half-year':
+            return data.slice(Math.max(data.length - 183, 1));
+            break;
+        case 'half-year-individual':
             return data.slice(Math.max(data.length - 183, 1));
             break;
         case 'month':
             return data.slice(Math.max(data.length - 30, 1));
             break;
+        case 'month-individual':
+            return data.slice(Math.max(data.length - 30, 1));
+            break;
         case 'week':
+            return data.slice(Math.max(data.length - 7, 1));
+            break;
+        case 'week-individual':
             return data.slice(Math.max(data.length - 7, 1));
             break;
         default:
@@ -140,13 +194,13 @@ function filterOnLastDays(data, type) {
 
 function draw(elementId) { 
     // set the dimensions and margins of the graph
-    var margin = {top: 50, right: 30, bottom: 30, left: 60},
+    var margin = {top: 50, right: 0, bottom: 30, left: 45},
         width = window.innerWidth - margin.left - margin.right,
-        height = 920 - margin.top - margin.bottom;
+        height = 640 - margin.top - margin.bottom;
     // append the svg object to the body of the page
     var svg = selectAndAppendElement(elementId, margin, width, height);
-
-            //Read the data
+    function generateOverviewGraph() {
+    //Read the data
     d3.csv("./data/personal.csv",
 
         // When reading the csv, I must format variables:
@@ -167,14 +221,6 @@ function draw(elementId) {
             .attr("class", "axis")
             .call(d3.axisBottom(x));
 
-        svg.append("text")
-            .attr("x", (width / 2))             
-            .attr("y", height)
-            .attr("text-anchor", "middle")  
-            .style("font-family", "Georgia, Times, 'Times New Roman', serif")
-            .style("font-size", (window.innerWidth / 10) <= 96 ? (window.innerWidth / 10) : 96) 
-            .style("fill", "white")  
-            .text((elementId.charAt(0).toUpperCase() + elementId.slice(1)).replace('-', ' '));
         // Add Y axis
         var y = setYAxis(dataPersonal, height, elementId);
         svg.append("g")
@@ -194,7 +240,6 @@ function draw(elementId) {
 
             function(dataIndividual) {
                 const uniqueSymbols = [... new Set(dataIndividual.map(({symbol}) => symbol))];
-
                 uniqueSymbols.map((symbolName) => {
                     // Add the line
                     addPerformanceLine(svg, filterOnLastDays(dataIndividual.filter(({symbol}) => symbol === symbolName), elementId), x, y, "#"+((1<<24)*Math.random()|0).toString(16), 'individual');
@@ -226,16 +271,60 @@ function draw(elementId) {
                 // Add the trendline
                 addTrendline(svg, dataSPY, x, y, 'spy', height, width);
             }
-        );  
+        );   
     });
+    }
+    function generateIndividualGraph() {
+        //Read the data
+        d3.csv("./data/individual.csv",
+    
+            // When reading the csv, I must format variables:
+            function(d){
+                return { date : d3.timeParse("%Y-%m-%d")(d.date), value : d.value, symbol : d.symbol }
+            },
+            
+            function(dataIndividual) {
+                const uniqueSymbols = [... new Set(dataIndividual.map(({symbol}) => symbol))];
+                dataIndividualFiltered = filterOnLastDays(dataIndividual, elementId)
+            // Add X axis --> it is a date format
+            var x = setXAxis(dataIndividualFiltered, width);
+    
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "axis")
+                .call(d3.axisBottom(x));
+            // Add Y axis
+            var y = setYAxis(dataIndividualFiltered, height, elementId);
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(y));
+
+                uniqueSymbols.map((symbolName) => {
+                    // Add the line
+                    addPerformanceLine(svg, filterOnLastDays(dataIndividual.filter(({symbol}) => symbol === symbolName), elementId), x, y, "#"+((1<<24)*Math.random()|0).toString(16), 'individual');
+                })
+            })
+    };
+    if (elementId.includes('individual')) {
+        generateIndividualGraph();
+    } else {
+        generateOverviewGraph();
+    }
+    
+    
 }
 
 function start() {
         draw('four-years');
+        draw('four-years-individual');
         draw('one-year');
+        draw('one-year-individual');
         draw('half-year');
+        draw('half-year-individual');
         draw('month');
+        draw('month-individual');
         draw('week');
+        draw('week-individual');
         WINDOW_INNER_WIDTH = window.innerWidth;
 }
 
@@ -244,7 +333,7 @@ function reset() {
         return;
     } else {
         WINDOW_INNER_WIDTH = window.innerWidth;
-        const elements = ["four-years", "one-year", "half-year", "month", "week"];
+        const elements = ["four-years", "one-year", "half-year", "month", "week", "four-years-individual", "one-year-individual", "half-year-individual", "month-individual", "week-individual"];
         elements.forEach((elementName) => {
             const element = document.getElementById(elementName);
             if (element) {
