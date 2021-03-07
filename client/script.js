@@ -97,7 +97,7 @@ function addPerformanceLine(svgElement, data, x, y, lineColor, type) {
 
     function showTicker() {
         stockText.text(data[0].symbol);
-        profitText.text(`${calculatePercentage(data[0].value, data[data.length - 1].value)  >= 0 ? '+' : ''}${calculatePercentage(data[0].value, data[data.length - 1].value)}%`);
+        profitText.text(`${calculatePercentage(data[0].value, data[data.length - 1].value)  > 0 ? '+' : ''}${calculatePercentage(data[0].value, data[data.length - 1].value)}%`);
         path.attr("stroke-width", 8);
         stockText.style("display", "block");
         profitText.style("display", "block");
@@ -201,16 +201,21 @@ function filterOnLastDays(data, type) {
 function addPaths(data, svgElement, elementId, x, y) {
     const uniqueSymbols = [... new Set(data.map(({symbol}) => symbol))];
     const paths = [];
+    let writtenPortfolio = '| ';
     uniqueSymbols.map((symbolName) => {
+        let symbolData = filterOnLastDays(data.filter(({symbol}) => symbol === symbolName), elementId);
+        writtenPortfolio = writtenPortfolio + `Symbol: ${symbolData[0].symbol}, Percentage: ${Math.floor(((symbolData[symbolData.length - 1].value/lastValuePersonal)*100))}% | `;
+        console.log(writtenPortfolio);
+        console.log(data[data.length - 1].value);
         // Add the line
-        paths.push({symbol: symbolName, path: addPerformanceLine(svgElement, filterOnLastDays(data.filter(({symbol}) => symbol === symbolName), elementId), x, y, "#"+((1<<24)*Math.random()|0).toString(16), 'individual')});
+        paths.push({symbol: symbolName, path: addPerformanceLine(svgElement, symbolData, x, y, "#"+((1<<24)*Math.random()|0).toString(16), 'individual')});
     });
     return paths;
 }
 
 function draw(elementId) { 
     // set the dimensions and margins of the graph
-    var margin = {top: 50, right: 0, bottom: 30, left: 45},
+    var margin = {top: 50, right: 30, bottom: 30, left: 45},
         width = window.innerWidth - margin.left - margin.right,
         height = window.innerHeight - margin.top - margin.bottom;
     // append the svg object to the body of the page
@@ -229,6 +234,8 @@ function draw(elementId) {
             let initialValuePersonal;
             dataPersonal = filterOnLastDays(dataPersonal, elementId)
             initialValuePersonal = dataPersonal[0].value;
+            lastValuePersonal = dataPersonal[dataPersonal.length -1].value;
+            console.log(lastValuePersonal = dataPersonal[dataPersonal.length -1].value);
         // Add X axis --> it is a date format
         var x = setXAxis(dataPersonal, width);
 
@@ -243,7 +250,7 @@ function draw(elementId) {
             .attr("class", "axis")
             .call(d3.axisLeft(y));
         // Add the line
-        addPerformanceLine(svg, dataPersonal, x, y, "#00a383ff");
+        addPerformanceLine(svg, dataPersonal, x, y, "green");
         
         // Add the trendline
         addTrendline(svg, dataPersonal, x, y, 'personal', height, width);
